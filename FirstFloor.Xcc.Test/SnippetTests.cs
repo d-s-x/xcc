@@ -242,6 +242,48 @@ namespace FirstFloor.Xcc.Test
 </Grid>");
         }
 
+        [TestMethod]
+        public void TestMetaWin81()
+        {
+            TestXaml("WINDOWS_APP",
+                @"
+<Grid>
+    <TextBox Name=""T1"" />
+    <win81:meta>
+        <Button Background=""Yellow"" win81:Background=""Green"" wp81:Background=""Red"" />
+        <TextBox />
+    </win81:meta>
+    <TextBox Name=""T2"" />
+</Grid>",
+                @"
+<Grid>
+    <TextBox Name=""T1"" />
+    <Button Background=""Green"" /><TextBox />
+    <TextBox Name=""T2"" />
+</Grid>");
+        }
+
+        [TestMethod]
+        public void TestMetaWP81()
+        {
+            TestXaml("WINDOWS_PHONE_APP",
+                @"
+<Grid>
+    <TextBox Name=""T1"" />
+    <win81:meta>
+        <Button Background=""Yellow"" win81:Background=""Green"" wp81:Background=""Red"" />
+        <TextBox />
+    </win81:meta>
+    <TextBox Name=""T2"" />
+</Grid>",
+                @"
+<Grid>
+    <TextBox Name=""T1"" />
+    
+    <TextBox Name=""T2"" />
+</Grid>");
+        }
+
         private static void TestXaml(string symbols, string xamlSnippet, string expectedResult)
         {
             var preprocessor = new XamlPreprocessor(symbols);

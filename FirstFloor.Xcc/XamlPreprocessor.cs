@@ -93,10 +93,8 @@ namespace FirstFloor.Xcc
             while (stack.Count > 0) {
                 var element = stack.Pop();
                 bool elementUpdated;
-                if (ProcessElement(element, out elementUpdated)) {
-                    foreach (var e in element.Elements()) {
-                        stack.Push(e);
-                    }
+                foreach (var e in ProcessElement(element, out elementUpdated)) {
+                    stack.Push(e);
                 }
                 if (elementUpdated) {
                     updated = true;
@@ -113,7 +111,8 @@ namespace FirstFloor.Xcc
             return updated;
         }
 
-        private bool ProcessElement(XElement element, out bool updated)
+        /// <returns>Child elements to process or empty set</returns>
+        private IEnumerable<XElement> ProcessElement(XElement element, out bool updated)
         {
             updated = false;
 
@@ -123,6 +122,21 @@ namespace FirstFloor.Xcc
                 updated = true;
 
                 if (elemMatch.Value) {
+                    
+                    if (IsConditionGroup(element.Name)) {
+                        
+                        // replace element with it's childs
+                        IEnumerable<XElement> childs = element.Elements().ToList();
+                        foreach (var child in childs.Reverse())
+                        {
+                            child.Remove();
+                            element.AddAfterSelf(child);
+                        }
+                        element.Remove();
+
+                        return childs;
+                    }
+
                     // move element to XAML namespace
                     element.Name = XName.Get(element.Name.LocalName, Xmlns.XamlPresentation);
                 }
@@ -130,7 +144,7 @@ namespace FirstFloor.Xcc
                     // remove element
                     element.Remove();
 
-                    return false; // stop processing
+                    return Enumerable.Empty<XElement>(); // stop processing
                 }
             }
 
@@ -162,7 +176,7 @@ namespace FirstFloor.Xcc
                 }
             }
 
-            return true;
+            return element.Elements();
         }
 
         private bool? Include(XName name)
@@ -196,6 +210,11 @@ namespace FirstFloor.Xcc
                 return name.NamespaceName.Substring(10);
             }
             return null;
+        }
+
+        private bool IsConditionGroup(XName name)
+        {
+            return name.LocalName == "meta";
         }
     }
 }
